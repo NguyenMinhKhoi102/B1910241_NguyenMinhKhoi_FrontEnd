@@ -9,5 +9,55 @@
         </router-link>
       </li>
     </div>
+
+    <div class="navbar-nav" v-if="!isAuthenticated">
+      <li class="nav-item">
+        <router-link :to="{ name: 'signin' }" class="nav-link">
+          Đăng nhập
+        </router-link>
+      </li>
+      <li class="nav-item">
+        <router-link :to="{ name: 'signup' }" class="nav-link">
+          Đăng ký
+        </router-link>
+      </li>
+    </div>
+
+    <div class="navbar-nav" v-else-if="isAuthenticated">
+      <li class="nav-item">
+        <button @click="signOut" class="nav-link btn btn-link">
+          Đăng xuất
+          <i class="fas fa-sign-out"></i>
+        </button>
+      </li>
+    </div>
   </nav>
 </template>
+
+<script>
+import { mapState, mapMutations } from 'vuex';
+import userService from "@/services/user.service";
+export default {
+  computed: {
+    ...mapState(['isAuthenticated'])
+  },
+  methods: {
+    ...mapMutations(['setIsAuthenticated']),
+    async signOut() {
+      try {
+        const headers = {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        };
+        await userService.signOut({ headers });
+        localStorage.removeItem('token');
+        // Sử dụng mutation để cập nhật trạng thái isAuthenticated
+        this.setIsAuthenticated(false);
+        this.$router.push({ name: 'signin' });
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  }
+}
+
+</script>
